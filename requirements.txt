@@ -1,5 +1,3 @@
 flask
-gunicorn
 requests
-secrets
-OpenSSL
+gunicorn

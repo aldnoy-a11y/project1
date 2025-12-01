@@ -1,5 +1,5 @@
 flask
 gunicorn
-request
+requests
 sqlite3
 secrets

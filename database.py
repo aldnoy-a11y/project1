@@ -11,7 +11,10 @@ def init_db():
         hwid TEXT,
         plan TEXT,
         expires_at TEXT,
-        status TEXT DEFAULT 'active'
+        status TEXT DEFAULT 'active',
+        user TEXT DEFAULT ''
+
+
     )
     """)
 

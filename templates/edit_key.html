@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Key</title>
+</head>
+<body style="font-family: Arial; text-align:center;">
+    <h1>Edit Key: {{ key }}</h1>
+
+    <form action="/admin/edit/{{ key }}" method="POST">
+
+        User: <br>
+        <input name="user" value="{{ data.user }}"><br><br>
+
+        Expires (timestamp): <br>
+        <input name="expires" value="{{ data.expires }}"><br><br>
+
+        Active (true/false): <br>
+        <input name="active" value="{{ data.active }}"><br><br>
+
+        <button type="submit">Update</button>
+    </form>
+
+    <br><a href="/admin">Back</a>
+</body>
+</html>

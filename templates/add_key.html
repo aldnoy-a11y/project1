@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add License Key</title>
+    <script>
+        function toggleCustomDays() {
+            let plan = document.getElementById("plan").value;
+            let customBox = document.getElementById("custom_days_box");
+
+            if (plan === "custom") {
+                customBox.style.display = "block";
+            } else {
+                customBox.style.display = "none";
+            }
+        }
+    </script>
+</head>
+
+<body style="font-family: Arial; text-align:center;">
+
+<h1>Add New License Key</h1>
+
+<form action="/admin/add" method="POST">
+
+    <label>User:</label><br>
+    <input type="text" name="user" placeholder="Username" required><br><br>
+
+    <label>Plan:</label><br>
+    <select name="plan" id="plan" onchange="toggleCustomDays()" required>
+        <option value="1day">Day</option>
+        <option value="1week">Week</option>
+        <option value="1month">Month</option>
+        <option value="1year">Year</option>
+        <option value="custom">Custom</option>
+    </select>
+    <br><br>
+
+    <div id="custom_days_box" style="display:none;">
+        <label>Custom Days:</label><br>
+        <input type="number" name="custom_days" placeholder="Enter days"><br><br>
+    </div>
+
+    <button type="submit">Create License</button>
+
+</form>
+
+<br>
+<a href="/admin">Back</a>
+
+</body>
+</html>

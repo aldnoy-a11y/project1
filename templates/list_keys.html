@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Keys</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: auto;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<body style="font-family: Arial; text-align:center;">
+
+<h1>All License Keys</h1>
+
+<table>
+    <tr>
+        <th>Key</th>
+        <th>User</th>
+        <th>Plan</th>
+        <th>Expires</th>
+        <th>Status</th>
+        <th>HWID</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for item in keys %}
+    <tr>
+        <td>{{ item.license_key }}</td>
+        <td>{{ item.user }}</td>
+        <td>{{ item.plan }}</td>
+        <td>{{ item.expires_at }}</td>
+        <td>{{ item.status }}</td>
+        <td>{{ item.hwid }}</td>
+
+        <td>
+            <a href="/admin/edit/{{ item.license_key }}">Edit</a> |
+            <a href="/admin/delete/{{ item.license_key }}">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br><a href="/admin">Back</a>
+
+</body>
+</html>

@@ -13,7 +13,18 @@
                 customBox.style.display = "none";
             }
         }
+
+
     </script>
+
+
+    <script>
+function toggleCustomDays() {
+    let plan = document.getElementById("plan").value;
+    document.getElementById("custom_days_box").style.display = (plan === "custom") ? "block" : "none";
+    document.getElementById("minutes_box").style.display = (plan === "minutes") ? "block" : "none";
+}
+</script>
 </head>
 
 <body style="font-family: Arial; text-align:center;">
@@ -32,6 +43,8 @@
         <option value="1month">Month</option>
         <option value="1year">Year</option>
         <option value="custom">Custom</option>
+        <option value="minutes">Minutes</option>
+
     </select>
     <br><br>
 
@@ -39,6 +52,11 @@
         <label>Custom Days:</label><br>
         <input type="number" name="custom_days" placeholder="Enter days"><br><br>
     </div>
+
+<div id="minutes_box" style="display:none;">
+    <label>Minutes:</label><br>
+    <input type="number" name="minutes" placeholder="Enter minutes"><br><br>
+</div>
 
     <button type="submit">Create License</button>
 

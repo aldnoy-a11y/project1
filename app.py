@@ -1,24 +1,42 @@
 from flask import Flask, render_template, request, jsonify, redirect
 import sqlite3
 import datetime
-import time
 import secrets
+
 app = Flask(__name__)
 DB_FILE = "licenses.db"
 
 
+# ------------------ HELPERS ------------------
+def auto_expire_keys():
+    conn = get_db()
+    c = conn.cursor()
+
+    now = datetime.datetime.now().isoformat()
+
+    c.execute("""
+        UPDATE licenses
+        SET status='expired'
+        WHERE expires_at < ? AND status='active'
+    """, (now,))
+
+    conn.commit()
+    conn.close()
+
+
 def generate_key():
     return secrets.token_hex(8).upper()
-# ------------------ DATABASE HELPER ------------------
+
 
 def get_db():
     return sqlite3.connect(DB_FILE)
 
 
-# ------------------ LICENSE CHECK API ------------------
+# ------------------ CHECK LICENSE API ------------------
 
 @app.route("/check", methods=["POST"])
 def check_license():
+    auto_expire_keys()
     data = request.json
     if not data:
         return jsonify({"status": "error", "message": "no_json"})
@@ -40,16 +58,17 @@ def check_license():
 
     lic_id, saved_hwid, plan, expires_at, status, user = row
 
+    # حالة المفتاح
     if status != "active":
         return jsonify({"status": "inactive"})
 
+    # فحص وقت الانتهاء
     expires = datetime.datetime.fromisoformat(expires_at)
     now = datetime.datetime.now()
-
     if now > expires:
         return jsonify({"status": "expired"})
 
-    # First time HWID binding
+    # ربط HWID لأول مرة
     if not saved_hwid:
         c.execute("UPDATE licenses SET hwid=? WHERE id=?", (hwid, lic_id))
         conn.commit()
@@ -68,7 +87,7 @@ def check_license():
     })
 
 
-# ------------------ ADMIN PAGES ------------------
+# ------------------ ADMIN AREA ------------------
 
 @app.route("/")
 def index():
@@ -82,6 +101,7 @@ def admin_dashboard():
 
 @app.route("/admin/list")
 def admin_list():
+    auto_expire_keys()
     conn = get_db()
     c = conn.cursor()
 
@@ -95,7 +115,6 @@ def admin_list():
         else:
             return f"Database Error: {e}", 500
 
-    # Build list for template
     licenses = []
     for r in rows:
         licenses.append({
@@ -113,37 +132,51 @@ def admin_list():
 @app.route("/admin/add", methods=["GET", "POST"])
 def admin_add():
     if request.method == "POST":
-        
+
         user = request.form.get("user")
         plan = request.form.get("plan")
 
         if not user or not plan:
             return "Missing fields", 400
 
-        # Determine days based on plan
+        now = datetime.datetime.now()
+        expires = None
+
+        # --------- PLANS ---------
+
         if plan == "1day":
-            days = 1
+            expires = now + datetime.timedelta(days=1)
+
         elif plan == "1week":
-            days = 7
+            expires = now + datetime.timedelta(days=7)
+
         elif plan == "1month":
-            days = 30
+            expires = now + datetime.timedelta(days=30)
+
         elif plan == "1year":
-            days = 365
+            expires = now + datetime.timedelta(days=365)
+
         elif plan == "custom":
             custom_days = request.form.get("custom_days")
             if not custom_days:
                 return "Missing custom days", 400
-            days = int(custom_days)
+            expires = now + datetime.timedelta(days=int(custom_days))
+
+        elif plan == "minutes":
+            minutes = request.form.get("minutes")
+            if not minutes:
+                return "Missing minutes", 400
+            expires = now + datetime.timedelta(minutes=int(minutes))
+
         else:
             return "Invalid plan", 400
 
-        # Generate key + expiration
+        # --------- FINAL INSERT ---------
+
         key = generate_key()
-        expires = datetime.datetime.now() + datetime.timedelta(days=days)
 
         conn = get_db()
         c = conn.cursor()
-
         c.execute("""
             INSERT INTO licenses (license_key, user, plan, expires_at, status, hwid)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -196,7 +229,6 @@ def admin_delete(key):
     c = conn.cursor()
     c.execute("DELETE FROM licenses WHERE license_key=?", (key,))
     conn.commit()
-
     return redirect("/admin/list")
 
 
